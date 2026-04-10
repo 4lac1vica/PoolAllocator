@@ -1,0 +1,3 @@
+D:/ProiecteSuplimentare/PoolAllocator/cmake-build-debug/CMakeFiles/PoolAllocator.dir
+D:/ProiecteSuplimentare/PoolAllocator/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/ProiecteSuplimentare/PoolAllocator/cmake-build-debug/CMakeFiles/rebuild_cache.dir
