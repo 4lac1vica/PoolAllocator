@@ -2,11 +2,19 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 
 #define BLOCK_SIZE 32   //32 * 16 = 512 bytes
 #define BLOCK_COUNT 16
-#define FULLCAP 512
+
+/*
+    Acest program are rolul de a implementa un pool allocator.
+    Sunt prezente mai multe functionalitati.
+    Capacitatea de testare : 512 bytes (este scalabil)
+
+    Todi Tinu-Constantin
+*/
 
 
 typedef struct freeBlock {
@@ -80,9 +88,23 @@ void* allocate(poolallocator* pool) {
     int index = pointerToIndex(pool, block);
     pool -> used[index] = 0; //blocul este ocupat!
 
-
     return (void*)block;
 }
+
+void* allocateWValue(poolallocator* pool, uint8_t value) {
+
+    void* ptr = allocate(pool);
+
+    if (ptr == NULL) {
+        return NULL;
+    }
+
+    memset(ptr, value, BLOCK_SIZE);
+
+    return (void*)ptr;
+}
+
+
 
 
 void freepool(poolallocator* pool, void* ptr) {
@@ -136,10 +158,24 @@ void statistics(poolallocator* pool) {
             fullCapacity = fullCapacity - BLOCK_SIZE;
         }
     }
-    printf("Mai sunt %d bytes disponibili.", fullCapacity);
+    printf("Mai sunt %d bytes disponibili.\n", fullCapacity);
+}
+
+void poolReset(poolallocator* pool) {
+    initAllocator(pool);
+}
+
+void* allocate_array(poolallocator* pool, size_t elemsize , int count) {
+    if (elemsize * count > BLOCK_SIZE) {
+        return NULL;
+    }
+
+    return allocate(pool);
 }
 
 int main(void) {
+
+    /// TESTING
 
     poolallocator pool;
     initAllocator(&pool);
@@ -181,6 +217,43 @@ int main(void) {
 
     statistics(&pool);
 
+    poolReset(&pool);
+
+    statistics(&pool);
+
+    void* ptr11 = allocate(&pool);
+    printf("%p -> %d\n", ptr11,*(int*)ptr11);
+
+    *(int*)ptr11 = b;
+
+    printf("%p -> %d\n", ptr11,*(int*)ptr11);
+
+    statistics(&pool);
+
+    freepool(&pool, ptr11);
+
+    int* ptr12 = allocateWValue(&pool, 0);
+
+    printf("%p -> %d\n", ptr12, *ptr12);
+
+    statistics(&pool);
+
+
+    int* arr = (int*)allocate_array(&pool,sizeof(int), 5);
+
+    for (int i = 0; i < 5; i++) {
+        arr[i] = i;
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+    statistics(&pool);
+
+    freepool(&pool, arr);
+
+    statistics(&pool);
+
+    freepool(&pool, ptr12);
+    statistics(&pool);
 
     return 0;
 }
